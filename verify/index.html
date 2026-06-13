@@ -266,6 +266,19 @@ function render(report) {
   elNote.hidden = false;
 }
 
+// Build a .row div from [label, value, ...] pairs using textContent — never innerHTML,
+// because these values come from the untrusted core.json (XSS otherwise).
+function readoutRow(...pairs) {
+  const div = document.createElement('div');
+  div.className = 'row';
+  for (let i = 0; i < pairs.length; i += 2) {
+    const dt = document.createElement('dt'); dt.textContent = pairs[i];
+    const dd = document.createElement('dd'); dd.textContent = pairs[i + 1];
+    div.append(dt, dd);
+  }
+  return div;
+}
+
 function renderReadout(core) {
   const t0 = new Date(Number(core.t0Ms));
   const span = core.assets.length
@@ -273,14 +286,15 @@ function renderReadout(core) {
     : '—';
   const dev = core.captureDevice
     ? `${core.captureDevice.model} · ${core.captureDevice.systemName} ${core.captureDevice.systemVersion}` : '—';
-  let html = '';
-  html += `<div class="row"><dt>Incident time</dt><dd>${t0.toLocaleString()}</dd></div>`;
-  html += `<div class="row"><dt>Trigger</dt><dd>${core.triggerSource}</dd><dt>Device</dt><dd>${dev}</dd></div>`;
-  html += `<div class="row"><dt>Window</dt><dd>${span}</dd><dt>Motion samples</dt><dd>${(core.motion || []).length}</dd><dt>Location samples</dt><dd>${(core.location || []).length}</dd></div>`;
-  for (const a of core.assets) {
-    html += `<div class="row"><dt>Clip</dt><dd>${a.relativePath} · ${a.codec} · ${(a.startMs / 1000).toFixed(1)}…${(a.endMs / 1000).toFixed(1)}s</dd></div>`;
-  }
-  elReadout.innerHTML = html;
+  elReadout.replaceChildren(
+    readoutRow('Incident time', t0.toLocaleString()),
+    readoutRow('Trigger', core.triggerSource, 'Device', dev),
+    readoutRow('Window', span,
+               'Motion samples', String((core.motion || []).length),
+               'Location samples', String((core.location || []).length)),
+    ...core.assets.map(a => readoutRow('Clip',
+      `${a.relativePath} · ${a.codec} · ${(a.startMs / 1000).toFixed(1)}…${(a.endMs / 1000).toFixed(1)}s`))
+  );
   elReadout.hidden = false;
 }
     </script>
