@@ -1,0 +1,246 @@
+/* tessera-site — black-box theme (matches the A3 app icon + in-app palette). */
+
+:root {
+    --background: #0C0E11;
+    --surface: #16191E;
+    --text: #ECEAE4;
+    --text-muted: #8A8F98;
+    --text-dim: #6B7079;
+    --accent: #FF6A00;
+    --accent-soft: #3A2410;
+    --verified: #30D158;
+    --border: rgba(255, 255, 255, 0.09);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--background);
+    color: var(--text);
+    font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 1rem;
+    line-height: 1.6;
+    font-feature-settings: "ss01", "ss02";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+}
+
+header {
+    margin-bottom: 3rem;
+}
+
+.brand {
+    font-size: 1.25rem;
+    color: var(--text);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin: 2rem 0 0.5rem;
+    color: var(--text);
+}
+
+h1 + .subtitle {
+    color: var(--text-muted);
+    margin: 0 0 2.5rem;
+    font-size: 1.05rem;
+}
+
+h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 2.5rem 0 0.75rem;
+    letter-spacing: -0.01em;
+}
+
+h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 1.75rem 0 0.5rem;
+}
+
+p {
+    margin: 0 0 1rem;
+    color: var(--text);
+}
+
+p.lead {
+    color: var(--text);
+    font-size: 1.05rem;
+    margin-bottom: 2rem;
+}
+
+ul {
+    margin: 0 0 1.5rem;
+    padding-left: 1.5rem;
+    color: var(--text);
+}
+
+li {
+    margin-bottom: 0.4rem;
+}
+
+ul.bare {
+    list-style: none;
+    padding-left: 0;
+}
+
+ul.bare li::before {
+    content: "— ";
+    color: var(--text-dim);
+}
+
+a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+}
+
+a:hover {
+    text-decoration-thickness: 2px;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 3rem 0;
+}
+
+figure {
+    margin: 2.5rem 0;
+}
+
+figure img {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: block;
+    margin: 0 auto;
+}
+
+figcaption {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    text-align: center;
+}
+
+footer {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: var(--text);
+    text-decoration: underline;
+}
+
+.meta {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+}
+
+.meta dt {
+    display: inline;
+    font-weight: 600;
+}
+
+.meta dt::after {
+    content: ": ";
+}
+
+.meta dd {
+    display: inline;
+    margin: 0 1.5rem 0 0;
+}
+
+.verified {
+    border: 1px solid rgba(48, 209, 88, 0.3);
+    background: rgba(48, 209, 88, 0.07);
+    border-radius: 9px;
+    padding: 0.8rem 1rem;
+    margin: 0 0 2rem;
+    color: var(--verified);
+    font-size: 0.95rem;
+}
+
+.brand .mark {
+    position: relative;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.34rem;
+    background: var(--surface);
+    overflow: hidden;
+    flex: 0 0 auto;
+    transform: translateY(0.22rem);
+}
+
+.brand .mark::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 0.34rem;
+    background: var(--accent);
+}
+
+.brand .mark::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 0.78rem;
+    transform: translate(-50%, -50%);
+    width: 0.5rem; height: 0.5rem;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+}
+
+@media (max-width: 480px) {
+    main {
+        padding: 2rem 1.25rem 4rem;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+}
