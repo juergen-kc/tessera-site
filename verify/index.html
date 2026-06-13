@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify a dossier — Tessera</title>
+    <meta name="description" content="Verify a Tessera incident dossier in your browser. Runs entirely on your device — nothing is uploaded.">
+    <link rel="icon" type="image/svg+xml" href="/tessera-site/assets/favicon.svg">
+    <style>
+        :root {
+            --background:#0C0E11; --surface:#16191E; --text:#ECEAE4;
+            --text-muted:#8A8F98; --text-dim:#6B7079; --accent:#FF6A00;
+            --verified:#30D158; --fail:#FF453A; --border:rgba(255,255,255,0.09);
+        }
+        * { box-sizing:border-box; }
+        body { margin:0; background:var(--background); color:var(--text);
+            font-family:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+            line-height:1.6; -webkit-font-smoothing:antialiased; }
+        main { max-width:640px; margin:0 auto; padding:4rem 1.5rem 6rem; }
+        header { margin-bottom:3rem; }
+        .brand { font-size:1.25rem; color:var(--text); font-weight:600; letter-spacing:-0.02em;
+            text-decoration:none; display:inline-flex; align-items:baseline; gap:0.5rem; }
+        .brand .mark { position:relative; width:1.25rem; height:1.25rem; border-radius:0.34rem;
+            background:var(--surface); overflow:hidden; flex:0 0 auto; transform:translateY(0.22rem); }
+        .brand .mark::before { content:""; position:absolute; top:0; left:0; right:0; height:0.34rem; background:var(--accent); }
+        .brand .mark::after { content:""; position:absolute; left:50%; top:0.78rem; transform:translate(-50%,-50%);
+            width:0.5rem; height:0.5rem; border:2px solid var(--accent); border-radius:50%; }
+        h1 { font-size:2rem; font-weight:600; line-height:1.2; letter-spacing:-0.02em; margin:2rem 0 0.5rem; }
+        h1 + .subtitle { color:var(--text-muted); margin:0 0 2.5rem; font-size:1.05rem; }
+        p { margin:0 0 1rem; }
+        a { color:var(--accent); text-underline-offset:0.2em; }
+        .dropzone { border:2px dashed var(--border); border-radius:12px; padding:3rem 1.5rem;
+            text-align:center; color:var(--text-muted); cursor:pointer; transition:border-color .15s,background .15s; }
+        .dropzone:hover, .dropzone.dragover { border-color:var(--accent); background:rgba(255,106,0,0.05); color:var(--text); }
+        .dropzone strong { color:var(--text); }
+        .btn { display:inline-block; margin-top:1rem; background:none; border:1px solid var(--border);
+            color:var(--text-muted); font:inherit; padding:0.5rem 1rem; border-radius:8px; cursor:pointer; }
+        .btn:hover { border-color:var(--accent); color:var(--text); }
+        .verdict { border-radius:9px; padding:1rem 1.25rem; margin:2rem 0 1.5rem; font-size:1.1rem; font-weight:600; display:none; }
+        .verdict.pass { border:1px solid rgba(48,209,88,0.4); background:rgba(48,209,88,0.08); color:var(--verified); }
+        .verdict.fail { border:1px solid rgba(255,69,58,0.4); background:rgba(255,69,58,0.08); color:var(--fail); }
+        .checks { list-style:none; padding:0; margin:0 0 1.5rem; font-size:0.95rem; }
+        .checks li { margin-bottom:0.5rem; padding-left:1.6rem; position:relative; color:var(--text-muted); }
+        .checks li.ok::before { content:"✓"; color:var(--verified); position:absolute; left:0; }
+        .checks li.bad::before { content:"✗"; color:var(--fail); position:absolute; left:0; }
+        .readout { border:1px solid var(--border); border-radius:9px; padding:1rem 1.25rem; margin-bottom:1.5rem;
+            font-size:0.85rem; color:var(--text-muted); }
+        .readout dt { color:var(--text-dim); display:inline; }
+        .readout dt::after { content:": "; }
+        .readout dd { display:inline; margin:0 1.5rem 0 0; color:var(--text); }
+        .readout .row { margin-bottom:0.35rem; }
+        .note { font-size:0.85rem; color:var(--text-dim); margin-top:1rem; }
+        footer { margin-top:5rem; padding-top:2rem; border-top:1px solid var(--border); color:var(--text-dim);
+            font-size:0.85rem; display:flex; flex-wrap:wrap; gap:1.5rem; }
+        footer a { color:var(--text-muted); text-decoration:none; }
+        footer a:hover { color:var(--text); text-decoration:underline; }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <a class="brand" href="/tessera-site/"><span class="mark" aria-hidden="true"></span>tessera</a>
+        </header>
+
+        <h1>Verify a dossier.</h1>
+        <p class="subtitle">Drop an exported Tessera dossier below to check its signature and video integrity. It runs entirely in your browser — nothing is uploaded.</p>
+
+        <div id="dropzone" class="dropzone">
+            <p><strong>Drop the dossier files here</strong><br>or click to choose them</p>
+            <p style="font-size:0.85rem;color:var(--text-dim)">core.json, core.sig, pubkey.pem and the clip(s) — or the whole folder</p>
+            <button type="button" class="btn" id="sample-btn">Load sample dossier</button>
+            <input type="file" id="filepick" multiple hidden>
+        </div>
+
+        <div id="verdict" class="verdict"></div>
+        <ul id="checks" class="checks"></ul>
+        <div id="readout" class="readout" hidden></div>
+        <p id="note" class="note" hidden>Everything ran in your browser. Nothing was uploaded.</p>
+
+        <footer>
+            <a href="/tessera-site/">Home</a>
+            <a href="/tessera-site/privacy/">Privacy</a>
+            <a href="/tessera-site/support/">Support</a>
+            <a href="mailto:juergen@klaassen.consulting">Contact</a>
+        </footer>
+    </main>
+    <script type="module">
+// Strip PEM armor and base64-decode to DER key bytes.
+function pemToDer(pem) {
+  const b64 = pem.replace(/-----BEGIN [^-]+-----/, '')
+                 .replace(/-----END [^-]+-----/, '')
+                 .replace(/\s+/g, '');
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+// DER ECDSA SEQUENCE{INTEGER r, INTEGER s} → raw r‖s, each left-padded to 32 bytes (P-256).
+// WebCrypto verifies the raw (P1363) form; core.sig is DER, so this conversion is required.
+function derToP1363(der) {
+  let i = 0;
+  if (der[i++] !== 0x30) throw new Error('not a DER SEQUENCE');
+  let seqLen = der[i++];
+  if (seqLen & 0x80) {                          // long-form length
+    let n = seqLen & 0x7f; seqLen = 0;
+    while (n-- > 0) seqLen = (seqLen << 8) | der[i++];
+  }
+  const readInt = () => {
+    if (der[i++] !== 0x02) throw new Error('expected DER INTEGER');
+    const len = der[i++];
+    let val = der.slice(i, i + len); i += len;
+    while (val.length > 0 && val[0] === 0x00) val = val.slice(1);  // strip sign padding
+    if (val.length > 32) throw new Error('integer too long for P-256');
+    const padded = new Uint8Array(32);
+    padded.set(val, 32 - val.length);
+    return padded;
+  };
+  const r = readInt(), s = readInt();
+  const sig = new Uint8Array(64);
+  sig.set(r, 0); sig.set(s, 32);
+  return sig;
+}
+
+async function sha256Hex(bytes) {
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function verifySignature(pubPem, sigDer, coreBytes) {
+  const key = await crypto.subtle.importKey(
+    'spki', pemToDer(pubPem), { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+  const raw = derToP1363(sigDer);
+  return crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, raw, coreBytes);
+}
+
+// files: Map<string name, Uint8Array bytes>. Returns { findings: string[], core: object|null }.
+// Mirrors TesseraKit CoreVerifier's VerificationFinding identifiers exactly.
+async function verifyDossier(files) {
+  const findings = [];
+  const dec = new TextDecoder();
+  const coreBytes = files.get('core.json');
+  if (!coreBytes) return { findings: ['missingFile'], core: null };
+
+  // Signature check runs on the raw bytes regardless of JSON parseability —
+  // a tampered core.json that breaks JSON should still report signatureInvalid,
+  // not silently bail out with only coreUnparseable.
+  const sig = files.get('core.sig'), key = files.get('pubkey.pem');
+  if (!sig || !key) {
+    findings.push('missingFile');
+  } else {
+    try {
+      if (!(await verifySignature(dec.decode(key), sig, coreBytes))) findings.push('signatureInvalid');
+    } catch { findings.push('signatureUnparseable'); }
+  }
+
+  let core;
+  try {
+    core = JSON.parse(dec.decode(coreBytes));
+    if (!Array.isArray(core.assets) || core.t0Ms === undefined) throw new Error('shape');
+  } catch {
+    findings.push('coreUnparseable');
+    return { findings: [...new Set(findings)], core: null };
+  }
+
+  for (const asset of core.assets) {
+    const clip = files.get(asset.relativePath);
+    if (!clip) { findings.push('missingFile'); continue; }
+    if (await sha256Hex(clip) !== asset.sha256Hex) findings.push('videoHashMismatch');
+  }
+
+  return { findings: [...new Set(findings)], core };
+}
+
+const dropzone = document.getElementById('dropzone');
+const filepick = document.getElementById('filepick');
+const sampleBtn = document.getElementById('sample-btn');
+
+// Recurse one dropped directory entry into a flat File list (bundles are <10 flat files).
+function readEntry(entry, out) {
+  return new Promise((resolve) => {
+    if (entry.isFile) entry.file(f => { out.push(f); resolve(); });
+    else if (entry.isDirectory) {
+      entry.createReader().readEntries(async (ents) => {
+        for (const e of ents) await readEntry(e, out);
+        resolve();
+      });
+    } else resolve();
+  });
+}
+
+async function filesFromDrop(dt) {
+  const entries = [...dt.items].map(it => it.webkitGetAsEntry?.()).filter(Boolean);
+  if (entries.length) {
+    const out = [];
+    for (const e of entries) await readEntry(e, out);
+    return out;
+  }
+  return [...dt.files];
+}
+
+// File[] → Map<name, Uint8Array>
+async function toMap(fileList) {
+  const m = new Map();
+  for (const f of fileList) m.set(f.name, new Uint8Array(await f.arrayBuffer()));
+  return m;
+}
+
+async function run(fileList) {
+  if (!window.isSecureContext) {
+    return showError('Verification needs a secure context. Open this page over https:// (or a modern browser that treats local files as secure).');
+  }
+  const files = await toMap(fileList);
+  if (!files.has('core.json')) {
+    return showError('No core.json found in your selection. Drop all the dossier files (or the whole folder).');
+  }
+  const report = await verifyDossier(files);
+  render(report);
+}
+
+dropzone.addEventListener('click', () => filepick.click());
+filepick.addEventListener('change', () => filepick.files.length && run([...filepick.files]));
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', async e => {
+  e.preventDefault(); dropzone.classList.remove('dragover');
+  run(await filesFromDrop(e.dataTransfer));
+});
+
+const FINDING_LABELS = {
+  missingFile: 'All required files present (core.json, core.sig, pubkey.pem, clip)',
+  coreUnparseable: 'core.json is a valid evidence core',
+  signatureUnparseable: 'Signature and public key are well-formed',
+  signatureInvalid: 'Signature is valid over the exact core.json bytes',
+  videoHashMismatch: 'Each clip matches its signed fingerprint',
+};
+const CHECK_ORDER = ['missingFile', 'coreUnparseable', 'signatureUnparseable', 'signatureInvalid', 'videoHashMismatch'];
+
+const elVerdict = document.getElementById('verdict');
+const elChecks = document.getElementById('checks');
+const elReadout = document.getElementById('readout');
+const elNote = document.getElementById('note');
+
+function showError(msg) {
+  elVerdict.className = 'verdict fail'; elVerdict.style.display = 'block'; elVerdict.textContent = msg;
+  elChecks.innerHTML = ''; elReadout.hidden = true; elNote.hidden = true;
+}
+
+function render(report) {
+  const ok = report.findings.length === 0;
+  elVerdict.className = 'verdict ' + (ok ? 'pass' : 'fail');
+  elVerdict.style.display = 'block';
+  elVerdict.textContent = ok ? 'Verified ✓ — signature and video integrity confirmed.'
+                              : 'Verification failed — this dossier does not check out.';
+
+  elChecks.innerHTML = '';
+  for (const key of CHECK_ORDER) {
+    const failed = report.findings.includes(key);
+    const li = document.createElement('li');
+    li.className = failed ? 'bad' : 'ok';
+    li.textContent = FINDING_LABELS[key];
+    elChecks.appendChild(li);
+  }
+
+  if (report.core) renderReadout(report.core);
+  elNote.hidden = false;
+}
+
+function renderReadout(core) {
+  const t0 = new Date(Number(core.t0Ms));
+  const span = core.assets.length
+    ? `${(Math.min(...core.assets.map(a => a.startMs)) / 1000).toFixed(1)}s … +${(Math.max(...core.assets.map(a => a.endMs)) / 1000).toFixed(1)}s`
+    : '—';
+  const dev = core.captureDevice
+    ? `${core.captureDevice.model} · ${core.captureDevice.systemName} ${core.captureDevice.systemVersion}` : '—';
+  let html = '';
+  html += `<div class="row"><dt>Incident time</dt><dd>${t0.toLocaleString()}</dd></div>`;
+  html += `<div class="row"><dt>Trigger</dt><dd>${core.triggerSource}</dd><dt>Device</dt><dd>${dev}</dd></div>`;
+  html += `<div class="row"><dt>Window</dt><dd>${span}</dd><dt>Motion samples</dt><dd>${(core.motion || []).length}</dd><dt>Location samples</dt><dd>${(core.location || []).length}</dd></div>`;
+  for (const a of core.assets) {
+    html += `<div class="row"><dt>Clip</dt><dd>${a.relativePath} · ${a.codec} · ${(a.startMs / 1000).toFixed(1)}…${(a.endMs / 1000).toFixed(1)}s</dd></div>`;
+  }
+  elReadout.innerHTML = html;
+  elReadout.hidden = false;
+}
+    </script>
+</body>
+</html>
