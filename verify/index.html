@@ -297,6 +297,23 @@ function renderReadout(core) {
   );
   elReadout.hidden = false;
 }
+
+sampleBtn.addEventListener('click', async (e) => {
+  e.stopPropagation();                        // don't also trigger the dropzone's file picker
+  try {
+    const core = await (await fetch('sample/core.json')).json();
+    const names = ['core.json', 'core.sig', 'pubkey.pem', ...core.assets.map(a => a.relativePath)];
+    const files = [];
+    for (const n of names) {
+      const res = await fetch('sample/' + n);
+      if (!res.ok) throw new Error(n);
+      files.push(new File([await res.blob()], n));
+    }
+    run(files);
+  } catch {
+    showError('The sample is only available on the hosted page. Drop your own dossier to verify offline.');
+  }
+});
     </script>
 </body>
 </html>
