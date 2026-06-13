@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support — Tessera</title>
+    <meta name="description" content="How to mark incidents, verify a signed dossier, manage the one-time unlock, and get help with Tessera.">
+    <link rel="icon" type="image/svg+xml" href="/tessera-site/assets/favicon.svg">
+    <link rel="stylesheet" href="/tessera-site/assets/styles.css">
+</head>
+<body>
+    <main>
+        <header>
+            <a class="brand" href="/tessera-site/"><span class="mark" aria-hidden="true"></span>tessera</a>
+        </header>
+
+        <h1>Support</h1>
+        <p class="subtitle">How Tessera works, and how to get help.</p>
+
+        <h2>Recording &amp; marking</h2>
+        <p>Tessera records continuously while open and mounted. There are three ways an incident becomes a dossier:</p>
+        <ul class="bare">
+            <li><strong>Automatic.</strong> The Incident Engine watches motion and detects collisions and hard braking. Three sensitivity presets &mdash; Relaxed, Standard, Sensitive &mdash; tune how readily it fires.</li>
+            <li><strong>One tap.</strong> The MARK button flags the moment by hand.</li>
+            <li><strong>&ldquo;Hey&nbsp;Siri, mark this in Tessera.&rdquo;</strong> Hands-free, even with the screen dark.</li>
+        </ul>
+        <p>Each mark captures the footage from before and after the moment, so the lead-up is always preserved.</p>
+
+        <h2>Verifying a dossier</h2>
+        <p>Every signed dossier exports as a bundle anyone can check &mdash; no Tessera app required. With the public key, video, and signature files in hand:</p>
+        <ul class="bare">
+            <li><code>openssl dgst -sha256 -verify pubkey.pem -signature core.sig core.json</code></li>
+        </ul>
+        <p>A result of <code>Verified OK</code> proves the telemetry has not been altered. The hashes printed in the included PDF report match the bundle&rsquo;s files exactly, and the clip carries an embedded C2PA content credential. Editing a single video frame or telemetry sample breaks verification.</p>
+
+        <h2>Free tier &amp; the one-time unlock</h2>
+        <p>The free tier records continuously and saves plain video clips from your marks. The one-time $9.99 unlock adds the Incident Engine: automatic detection, signed and verifiable dossiers, the AI narrative, and court-ready export. It is a single purchase, with Family Sharing &mdash; no subscription.</p>
+        <p>Already purchased on another device? Open the library and tap <strong>Restore Purchases</strong> on the unlock sheet.</p>
+
+        <h2>Tips</h2>
+        <ul class="bare">
+            <li>Mount the phone with a clear view of the road; Tessera records what the camera sees.</li>
+            <li>On hot days, a shaded or vented mount helps &mdash; Tessera automatically lowers frame rate and resolution before heat forces a stop, and keeps recording.</li>
+            <li>Tessera arms itself each time you open it. There is no account and nothing to configure to start.</li>
+        </ul>
+
+        <h2>Contact</h2>
+        <p>Email <a href="mailto:juergen@klaassen.consulting">juergen@klaassen.consulting</a> and I&rsquo;ll help.</p>
+
+        <footer>
+            <a href="/tessera-site/">Home</a>
+            <a href="/tessera-site/privacy/">Privacy</a>
+            <a href="mailto:juergen@klaassen.consulting">Contact</a>
+        </footer>
+    </main>
+</body>
+</html>
